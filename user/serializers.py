@@ -5,19 +5,11 @@ from django.utils.translation import gettext_lazy as _
 
 UserModel = get_user_model()
 
-class CustomPhoneNumberField(PhoneNumberField):
-    def to_representation(self, value):
-        """
-        Convert PhoneNumber to string using PHONENUMBER_DEFAULT_FORMAT.
-        """
-        return str(value)
 
 class UserRegisterSerializer(serializers.ModelSerializer):
     """
     Serializer for user registration with additional confirmation fields.
     """
-
-    mobile = CustomPhoneNumberField()
     confirm_email = serializers.EmailField(write_only=True)
     confirm_password = serializers.CharField(write_only=True)
 
@@ -105,8 +97,6 @@ class UserViewSerializer(serializers.ModelSerializer):
     """
     Serializer for user details view.
     """
-
-    mobile = CustomPhoneNumberField()
 
     class Meta:
         model = UserModel
