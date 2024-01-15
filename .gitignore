@@ -1,0 +1,15 @@
+.env
+__pycache__/
+*$py.class
+.cach/
+.cache/
+*.pyc
+*.pyo
+*.pyd
+docs/_build
+**/migrations/*.py
+**/migrations/*.pyc
+venv/
+.vscode
+*.pid
+settings.py
