@@ -1,174 +1,170 @@
-import React, { useState, useEffect } from 'react';
-import LogoutButton from './LogoutButton';
-import UserDeleteButton from './UserDeleteButton';
+import React, { useState, useEffect} from "react";
+import { Container, Card, Button, Form } from 'react-bootstrap';
+import axios from "axios";
+
+const BASE_URL = 'http://127.0.0.1:8000';
 
 const UserProfile = () => {
-  const [user, setUser] = useState({});
-  const [formData, setFormData] = useState({
-    username: '',
-    email: '',
-    mobile: '',
-    first_name: '',
-    last_name: '',
-  });
-  const [error, setError] = useState(null);
-  const [isUpdating, setIsUpdating] = useState(false);
-
-  useEffect(() => {
-    // Fetch user details when the component mounts
-    fetch('/api/user/', {
-      headers: {
-        Authorization: `Token ${localStorage.getItem('token')}`,
-      },
-    })
-      .then((response) => response.json())
-      .then((data) => setUser(data))
-      .catch((error) => {
-        console.error('Error fetching user details:', error);
-        setError('Failed to fetch user details. Please try again.');
-      });
-  }, []);
-
-  const handleInputChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
+    const [userData, setUserData] = useState(null);
+    const [error, setError] = useState(null);
+    const [editMode, setEditMode] = useState(false);
+    const [editedData, setEditedData] = useState({
+        username : '',
+        email: '',
+        mobile: '',
+        first_name: '',
+        last_name: '',
     });
-  };
 
-  const handleUpdateUser = () => {
-    setIsUpdating(true);
+    useEffect(() => {
+        const token = localStorage.getItem('token');
 
-    fetch('/api/user/', {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Token ${localStorage.getItem('token')}`,
-      },
-      body: JSON.stringify(formData),
-    })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`Error: ${response.status}`);
+        const fetchUserData = async () => {
+            try {
+                const response = await axios.get(`${BASE_URL}/api/user/`, {
+                    headers: {
+                        Authorization: `Token ${token}`,
+                    },
+                });
+                setUserData(response.data)
+                setEditedData(response.data);
+            } catch (error) {
+                setError('No User Detials.')
+
+            }
+        };
+        fetchUserData();
+        
+    }, []);
+    const handleEditClick = () => {
+        setEditMode(true);
+    };
+
+    const handleSaveClick = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            await axios.put(
+                `${BASE_URL}/api/user/`,
+                editedData,
+                {
+                    headers: {
+                        Authorization: `Token ${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                }
+            );
+            // Fetch updated user data after saving
+            const response = await axios.get(`${BASE_URL}/api/user/`, {
+                headers: {
+                    Authorization: `Token ${token}`,
+                },
+            });
+            setUserData(response.data);
+            setEditMode(false); // Exit edit mode
+        } catch (error) {
+            setError('Error updating user details.');
         }
-        return response.json();
-      })
-      .then((data) => {
-        setUser(data);
-        setFormData({
-          username: '',
-          email: '',
-          mobile: '',
-          first_name: '',
-          last_name: '',
-        });
-      })
-      .catch((error) => {
-        console.error('Error updating user details:', error);
-        setError('Failed to update user details. Please try again.');
-      })
-      .finally(() => setIsUpdating(false));
-  };
+    };
 
-  const handleDeleteUser = () => {
-    const confirmation = window.confirm(
-      'Are you sure you want to delete your account? This action is irreversible.'
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setEditedData((prevData) => ({
+            ...prevData,
+            [name]: value,
+        }));
+    };
+
+     return (
+        <Container>
+            <h2>User Profile</h2>
+
+            {error && <p style={{ color: 'red' }}>{error}</p>}
+
+            {userData && (
+                <Card>
+                    <Card.Body>
+                        {editMode ? (
+                            <Form>
+                                <Form.Group controlId="formUsername">
+                                    <Form.Label>Username</Form.Label>
+                                    <Form.Control
+                                        type="text"
+                                        placeholder="Enter Username"
+                                        name="username"
+                                        value={editedData.username}
+                                        onChange={handleInputChange}
+                                    />
+                                </Form.Group>
+                                <Form.Group controlId="formEmail">
+                                    <Form.Label>Email</Form.Label>
+                                    <Form.Control
+                                        type="email"
+                                        placeholder="Enter email"
+                                        name="email"
+                                        value={editedData.email}
+                                        onChange={handleInputChange}
+                                    />
+                                </Form.Group>
+                                <Form.Group controlId="formMobile">
+                                    <Form.Label>Mobile</Form.Label>
+                                    <Form.Control
+                                        type="text"
+                                        placeholder="Enter mobile"
+                                        name="mobile"
+                                        value={editedData.mobile}
+                                        onChange={handleInputChange}
+                                    />
+                                </Form.Group>
+                                <Form.Group controlId="formFirstName">
+                                    <Form.Label>First Name</Form.Label>
+                                    <Form.Control
+                                        type="text"
+                                        placeholder="Enter first name"
+                                        name="first_name"
+                                        value={editedData.first_name}
+                                        onChange={handleInputChange}
+                                    />
+                                </Form.Group>
+                                <Form.Group controlId="formLastName">
+                                    <Form.Label>Last Name</Form.Label>
+                                    <Form.Control
+                                        type="text"
+                                        placeholder="Enter last name"
+                                        name="last_name"
+                                        value={editedData.last_name}
+                                        onChange={handleInputChange}
+                                    />
+                                </Form.Group>
+                            </Form>
+                        ) : (
+                            <>
+                                <Card.Title>{userData.username}</Card.Title>
+                                <Card.Text>
+                                    <strong>Email:</strong> {userData.email}
+                                    <br />
+                                    <strong>Mobile:</strong> {userData.mobile}
+                                    <br />
+                                    <strong>First Name:</strong> {userData.first_name}
+                                    <br />
+                                    <strong>Last Name:</strong> {userData.last_name}
+                                </Card.Text>
+                            </>
+                        )}
+
+                        {editMode ? (
+                            <Button variant="primary" onClick={handleSaveClick}>
+                                Save
+                            </Button>
+                        ) : (
+                            <Button variant="primary" onClick={handleEditClick}>
+                                Edit Profile
+                            </Button>
+                        )}
+                    </Card.Body>
+                </Card>
+            )}
+        </Container>
     );
-
-    if (confirmation) {
-      fetch('/api/user/delete/', {
-        method: 'DELETE',
-        headers: {
-          Authorization: `Token ${localStorage.getItem('token')}`,
-        },
-      })
-        .then((response) => {
-          if (response.status === 204) {
-            console.log('User successfully deleted.');
-            localStorage.removeItem('token');
-            window.location.href = '/login'; // Redirect to login page
-          } else {
-            console.error('Failed to delete user.');
-          }
-        })
-        .catch((error) => console.error('Error deleting user:', error));
-    }
-  };
-
-  return (
-    <div>
-      <h2>User Profile</h2>
-      {error && <div style={{ color: 'red' }}>{error}</div>}
-      <div>
-        <strong>Username:</strong> {user.username}
-      </div>
-      <div>
-        <strong>Email:</strong> {user.email}
-      </div>
-      <div>
-        <strong>Mobile:</strong> {user.mobile}
-      </div>
-      <div>
-        <strong>First Name:</strong> {user.first_name}
-      </div>
-      <div>
-        <strong>Last Name:</strong> {user.last_name}
-      </div>
-      <h3>Update Profile</h3>
-      <div>
-        <label>Username:</label>
-        <input
-          type="text"
-          name="username"
-          value={formData.username}
-          onChange={handleInputChange}
-        />
-      </div>
-      <div>
-        <label>Email:</label>
-        <input
-          type="email"
-          name="email"
-          value={formData.email}
-          onChange={handleInputChange}
-        />
-      </div>
-      <div>
-        <label>Mobile:</label>
-        <input
-          type="text"
-          name="mobile"
-          value={formData.mobile}
-          onChange={handleInputChange}
-        />
-      </div>
-      <div>
-        <label>First Name:</label>
-        <input
-          type="text"
-          name="first_name"
-          value={formData.first_name}
-          onChange={handleInputChange}
-        />
-      </div>
-      <div>
-        <label>Last Name:</label>
-        <input
-          type="text"
-          name="last_name"
-          value={formData.last_name}
-          onChange={handleInputChange}
-        />
-      </div>
-      <button onClick={handleUpdateUser} disabled={isUpdating}>
-        {isUpdating ? 'Updating...' : 'Update Profile'}
-      </button>
-      <br />
-      <LogoutButton />
-      <br />
-      <UserDeleteButton onDelete={handleDeleteUser} />
-    </div>
-  );
 };
 
 export default UserProfile;

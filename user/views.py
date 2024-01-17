@@ -116,7 +116,7 @@ class UserView(APIView):
             JSON response with updated user details or validation errors.
         """
         user = request.user
-        serializer = UserRegisterSerializer(user, data=request.data, partial=True)
+        serializer = UserViewSerializer(user, data=request.data, partial=True)
 
         if serializer.is_valid():
             serializer.save()

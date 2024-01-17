@@ -1,56 +1,94 @@
-import React, { useState } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect } from 'react';
+import { Container, Form, Button, Alert } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
-const LoginForm = () => {
+const BASE_URL = 'http://localhost:8000';
+
+const LoginForm = ({ setIsLoggedIn}) => {
   const [formData, setFormData] = useState({
     username: '',
     password: '',
   });
 
   const [loginError, setLoginError] = useState(null);
+  const [loginSuccess, setLoginSuccess] = useState(false);
   const navigate = useNavigate();
 
-  // Set your base URL
-  const baseURL = 'http://localhost:8000/';
-
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = async (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
 
     try {
-      const response = await axios.post(`${baseURL}api/login/`, formData);
-      console.log('User logged in successfully:', response.data);
+      const response = await axios.post(`${BASE_URL}/api/login/`, formData, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
 
-      
-      navigate('/'); 
+      // Handle success, redirect user to home page or perform other actions
+      console.log('User logged in successfully', response.data);
+      localStorage.setItem('token', response.data.token);
+      setLoginSuccess(true);
+      setIsLoggedIn(true);
     } catch (error) {
       console.error('Login failed:', error);
-
-      
-      setLoginError('Invalid username or password.');
+      setLoginError('Invalid username or password. Please try again.');
     }
   };
+  useEffect(() => {
+    if (loginSuccess){
+        const redirectTimer = setTimeout(() => {
+            navigate('/');
+        }, 2000);
+
+        return () => clearTimeout(redirectTimer);
+    }
+  }, [loginSuccess, navigate])
 
   return (
-    <form onSubmit={handleSubmit}>
-      <label>
-        Username:
-        <input type="text" name="username" value={formData.username} onChange={handleChange} />
-      </label>
-      <br />
-      <label>
-        Password:
-        <input type="password" name="password" value={formData.password} onChange={handleChange} />
-      </label>
-      <br />
-      <button type="submit">Login</button>
+    <Container>
+        {loginSuccess ? ( <Alert variant="success">
+        <p>Registration Successful! Redirecting to HomePage...</p>
+      </Alert>
+    ) : (
+        <>
+      <h2>Login Form</h2>
+      {loginError && <Alert variant="danger">{loginError}</Alert>}
+      <Form onSubmit={handleLogin}>
+        <Form.Group controlId="formUsername">
+          <Form.Label>Username</Form.Label>
+          <Form.Control
+            type="text"
+            placeholder="Enter username"
+            name="username"
+            value={formData.username}
+            onChange={handleChange}
+          />
+        </Form.Group>
 
-      {loginError && <div style={{ color: 'red' }}>{loginError}</div>}
-    </form>
+        <Form.Group controlId="formPassword">
+          <Form.Label>Password</Form.Label>
+          <Form.Control
+            type="password"
+            placeholder="Enter password"
+            name="password"
+            value={formData.password}
+            onChange={handleChange}
+          />
+        </Form.Group>
+
+        <Button variant="primary" type="submit">
+          Login
+        </Button>
+      </Form>
+      </>
+      )}
+    </Container>
   );
 };
 

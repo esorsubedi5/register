@@ -1,55 +1,98 @@
-// src/App.js
-import React, { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Container, Navbar, Nav, Button } from 'react-bootstrap';
+import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
+import logo from './logo.svg';
 import RegistrationForm from './components/RegistrationForm';
 import LoginForm from './components/LoginForm';
 import UserProfile from './components/UserProfile';
-import LogoutButton from './components/LogoutButton';
 
 const App = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('token'));
+  const [showRegistration, setShowRegistration] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      setIsLoggedIn(true);
+    } else {
+      setIsLoggedIn(false);
+    }
+  }, [setIsLoggedIn]);
+
+  const handleRegisterClick = () => {
+    setShowRegistration(true);
+  };
 
   const handleLogout = () => {
-    // Clear user token
-    localStorage.removeItem('token');
     setIsLoggedIn(false);
-    // Redirect to login page after logout
-    return <Navigate to="/login" />;
+    localStorage.removeItem('token');
   };
 
   return (
     <Router>
-      <div className="App">
-        <nav>
-          <ul>
-            <li>
-              <Link to="/register">Register</Link>
-            </li>
-            <li>
-              <Link to="/login">Login</Link>
-            </li>
-            {isLoggedIn && (
-              <>
-                <li>
-                  <Link to="/dashboard">User Profile</Link>
-                </li>
-                <li>
-                  <LogoutButton onLogout={handleLogout} />
-                </li>
-              </>
-            )}
-          </ul>
-        </nav>
+      <Container>
+        <Navbar bg="dark" variant="dark" expand="lg">
+          <Navbar.Brand href="/">
+            <img
+              src={logo}
+              width="30"
+              height="30"
+              className="d-inline-block align-top"
+              alt="React Bootstrap logo"
+            />
+            {' APP'}
+          </Navbar.Brand>
+          <Navbar.Toggle aria-controls="basic-navbar-nav" />
+          <Navbar.Collapse id="basic-navbar-nav">
+            <Nav className="mx-auto">
+              {isLoggedIn ? (
+                <>
+                  <Link to="/profile">
+                    <Button variant="primary" className="mx-2">
+                      User Profile
+                    </Button>
+                  </Link>
+                  <Button variant="outline-light" onClick={handleLogout}>
+                    Logout
+                  </Button>
+                </>
+              ) : (
+                <Link to="/register">
+                  <Button variant="success" className="mx-2" onClick={handleRegisterClick}>
+                    Register
+                  </Button>
+                </Link>
+              )}
+              {isLoggedIn || (
+                <Link to="/login">
+                  <Button variant="outline-light" className="mr-4">
+                    Login
+                  </Button>
+                </Link>
+              )}
+            </Nav>
+          </Navbar.Collapse>
+        </Navbar>
 
         <Routes>
-          <Route path="/register" element={<RegistrationForm />} />
+          <Route
+            path="/"
+            element={
+              isLoggedIn ? (
+                <h1>Welcome to App</h1>
+              ) : (
+                <p>Please login or register to access the content.</p>
+              )
+            }
+          />
+          <Route path="/register" element={showRegistration && <RegistrationForm />} />
           <Route
             path="/login"
-            element={isLoggedIn ? <Navigate to="/dashboard" /> : <LoginForm setIsLoggedIn={setIsLoggedIn} />}
+            element={<LoginForm setIsLoggedIn={setIsLoggedIn} />}
           />
-          <Route path="/dashboard" element={isLoggedIn ? <UserProfile /> : <Navigate to="/login" />} />
+          <Route path="/profile" element={<UserProfile />} />
         </Routes>
-      </div>
+      </Container>
     </Router>
   );
 };
