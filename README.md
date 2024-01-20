@@ -121,7 +121,7 @@ tzdata==2023.4
 ### React.js
 I prefer installing and running react in my local environment which is `venv`
 ```bash
-(venv) PS your-path-to-app\register\registration-app>npx create-react-app registration-app
+(venv) PS your-path-to-project\register\registration-app>npx create-react-app registration-app
 ```
 ```bash
 npx create-react-app registration-app
@@ -212,23 +212,24 @@ pip install python-dotenv
 ```
  And change following things in `settings.py` settings sort of like this:
 ```python
+# Import these
 import os
 from dotenv import load_dotenv
 load_dotenv()
-# SECURITY WARNING: keep the secret key used in production secret!
+```
+```python
 SECRET_KEY = os.getenv('SECRET_KEY')
-
-# SECURITY WARNING: don't run with debug turned on in production!
+```
+```python
 DEBUG = os.getenv('HOST')
-
+```
+```python
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
-
 # Remove any leading or trailing whitespaces from the items in the list
 ALLOWED_HOSTS = [host.strip() for host in ALLOWED_HOSTS]
-
-
+```
+```pytohn
 # Application definition
-
 INSTALLED_APPS = [
     # Add these apps
     'rest_framework',
@@ -237,17 +238,22 @@ INSTALLED_APPS = [
     'easyaudit',
     'corsheaders',
 ]
-
+```
+```python
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
     ],
 }
+```
+```python
 MIDDLEWARE = [
     #Add these Middleware
     'corsheaders.middleware.CorsMiddleware',
     'easyaudit.middleware.easyaudit.EasyAuditMiddleware',
 ]
+```
+```pytohn
 # This Database settings if for postgresql
 DATABASES = {
     'default':{
@@ -259,13 +265,13 @@ DATABASES = {
         'PORT': os.getenv('DB_PORT'),
     }
 }
+```
+```python
 CSRF_COOKIE_SECURE = True
 CSRF_USE_SESSIONS = True
-
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # React app development server
 ]
-
 # Set this to True during development to allow cookies with cross-origin requests
 CORS_ALLOW_CREDENTIALS = True
 ```
@@ -281,6 +287,11 @@ DB_USER=your_db_user
 DB_PASSWORD=your_db_password
 DB_HOST=your_db_host
 DB_PORT=your_db_port
+```
+```env
+#for dbsqlite
+DB_ENGINE=django.db.backends.sqlite3
+DB_NAME=your_db_name
 ```
 
 This is sample demo my `.env` is not exactly this;
@@ -300,7 +311,8 @@ DB_USER= Github
 DB_PASSWORD=12345657689  
 DB_HOST=localhost  
 DB_PORT=5432 
-
+```
+```env
 #for dbsqlite
 DB_ENGINE=django.db.backends.sqlite3
 # Set the name of your SQLite database file
