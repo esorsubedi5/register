@@ -196,6 +196,7 @@ python manage.py startapp user
 and database-related variables.
 create `.env` file using following commands
 This file must be in folder and same path as `manage.py`
+
 `Windows`
 ```bash
 New-Item -ItemType File -Name .env
