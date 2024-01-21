@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Container, Navbar, Nav, Button } from 'react-bootstrap';
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
-import logo from './logo.svg';
 import RegistrationForm from './components/RegistrationForm';
 import LoginForm from './components/LoginForm';
 import UserProfile from './components/UserProfile';
+import LogoutPage from './components/LogoutPage';
 
 const App = () => {
   const [showRegistration, setShowRegistration] = useState(false);
@@ -26,6 +26,7 @@ const App = () => {
   const handleLogout = () => {
     setIsLoggedIn(false);
     localStorage.removeItem('token');
+    window.location.reload();
   };
 
   return (
@@ -33,14 +34,7 @@ const App = () => {
       <Container>
         <Navbar bg="dark" variant="dark" expand="lg">
           <Navbar.Brand href="/">
-            <img
-              src={logo}
-              width="30"
-              height="30"
-              className="d-inline-block align-top"
-              alt="React Bootstrap logo"
-            />
-            {' APP'}
+            {'Register APP'}
           </Navbar.Brand>
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
           <Navbar.Collapse id="basic-navbar-nav">
@@ -91,6 +85,7 @@ const App = () => {
             element={<LoginForm setIsLoggedIn={setIsLoggedIn} />}
           />
           <Route path="/profile" element={<UserProfile />} />
+          <Route path="/logout" element={<LogoutPage />}/>
         </Routes>
       </Container>
     </Router>
